@@ -178,6 +178,7 @@ class LogisticRegression:
         """
         Penalized negative log likelihood of the targets under the current
         model.
+        NLL： Negative Log Likelihood
 
         .. math::
 
@@ -189,7 +190,7 @@ class LogisticRegression:
         N, M = X.shape
         order = 2 if self.penalty == "l2" else 1
         nll = -np.log(y_pred[y == 1]).sum() - np.log(1 - y_pred[y == 0]).sum()
-        penalty = 0.5 * self.gamma * np.linalg.norm(self.beta, ord=order) ** 2
+        penalty = 0.5 * self.gamma * np.linalg.norm(self.beta, ord=order) ** 2   # 即需要是平方的，norm 范数的话 的计算开方了
         return (penalty + nll) / N
 
     def _NLL_grad(self, X, y, y_pred):
@@ -199,7 +200,7 @@ class LogisticRegression:
         beta = self.beta
         gamma = self.gamma
         l1norm = lambda x: np.linalg.norm(x, 1)
-        d_penalty = gamma * beta if p == "l2" else gamma * l1norm(beta) * np.sign(beta)
+        d_penalty = gamma * beta if p == "l2" else gamma * l1norm(beta) * np.sign(beta)   #  pennal_ty 的导数
         return -(np.dot(y - y_pred, X) + d_penalty) / N
 
     def predict(self, X):
