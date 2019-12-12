@@ -200,7 +200,8 @@ class LogisticRegression:
         beta = self.beta
         gamma = self.gamma
         l1norm = lambda x: np.linalg.norm(x, 1)
-        d_penalty = gamma * beta if p == "l2" else gamma * l1norm(beta) * np.sign(beta)   #  pennal_ty 的导数
+        # 根据 penalty 计算导数：
+        d_penalty = gamma * beta if p == "l2" else gamma * l1norm(beta) * np.sign(beta)   # pennal_ty 的导数
         return -(np.dot(y - y_pred, X) + d_penalty) / N
 
     def predict(self, X):
