@@ -2,6 +2,10 @@ import numpy as np
 from ..utils.testing import is_symmetric_positive_definite, is_number
 
 
+#######
+# l1,l2: https://blog.csdn.net/qq_39068872/article/details/100977808
+
+
 class LinearRegression:
     def __init__(self, fit_intercept=True):
         """
@@ -30,7 +34,7 @@ class LinearRegression:
         """
         # convert X to a design matrix if we're fitting an intercept
         if self.fit_intercept:
-            X = np.c_[np.ones(X.shape[0]), X]
+            X = np.c_[np.ones(X.shape[0]), X]  # 10000*10  变成 10000 * 11  第一列全部是1
 
         pseudo_inverse = np.dot(np.linalg.inv(np.dot(X.T, X)), X.T)
         self.beta = np.dot(pseudo_inverse, y)
@@ -190,7 +194,37 @@ class LogisticRegression:
         N, M = X.shape
         order = 2 if self.penalty == "l2" else 1
         nll = -np.log(y_pred[y == 1]).sum() - np.log(1 - y_pred[y == 0]).sum()
-        penalty = 0.5 * self.gamma * np.linalg.norm(self.beta, ord=order) ** 2   # 即需要是平方的，norm 范数的话 的计算开方了
+        # 原始 合在一起
+        # penalty = 0.5 * self.gamma * np.linalg.norm(self.beta, ord=order) ** 2
+
+        # 拆开，然后下面的偏导数也要修改一下：
+        if self.penalty == "l2":
+            penalty = 0.5 * self.gamma * np.linalg.norm(self.beta, ord=order) ** 2
+        else:
+            penalty = self.gamma * np.linalg.norm(self.beta, ord=order)
+
+
+        # 参数向量的1 阶，2 阶 范数
+        # l2 即需要是平方的，的计算开方了
+        # todo: l1 norm why?
+        # 看百面ml
+        # 应该是： sum(绝对值)
+
+
+        ##### sklearn l2:
+        # out = -np.sum(sample_weight * log_logistic(yz)) +正则 .5 * alpha * np.dot(w, w)
+        # z = expit(yz)
+        # z0 = sample_weight * (z - 1) * y
+        #
+        # grad[:n_features] = safe_sparse_dot(X.T, z0) + 正则 alpha * w
+
+        #### sklearn l1
+        # ./sklearn/linear_model/sag.py
+        #  只有saga 可以计算l1，即SGD
+        #  SAG stands for Stochastic Average Gradient:
+
+
+
         return (penalty + nll) / N
 
     def _NLL_grad(self, X, y, y_pred):
@@ -200,9 +234,27 @@ class LogisticRegression:
         beta = self.beta
         gamma = self.gamma
         l1norm = lambda x: np.linalg.norm(x, 1)
+
+        #### 原始：
+
         # 根据 penalty 计算导数：
-        d_penalty = gamma * beta if p == "l2" else gamma * l1norm(beta) * np.sign(beta)   # pennal_ty 的导数
+        # d_penalty = gamma * beta if p == "l2" else gamma * l1norm(beta) * np.sign(beta)   # pennal_ty 的导数
+        # 如果自己算的话，应该是:
+        # l1 只有个 符号函数
+        # shape 也是（m+1，）
+
+        # 修改：
+        if p == "l2":
+            d_penalty = gamma * beta
+        else:
+            d_penalty = gamma * np.sign(beta)  # pennal_ty 的导数
+
         return -(np.dot(y - y_pred, X) + d_penalty) / N
+
+        # y-y_pred 是 N
+        # X: N*(M+1)
+        # 生成：（M+1,）
+
 
     def predict(self, X):
         """
@@ -224,7 +276,7 @@ class LogisticRegression:
             X = np.c_[np.ones(X.shape[0]), X]
         return sigmoid(np.dot(X, self.beta))
 
-
+# todo：BayesianLinearRegressionUnknownVariance，BayesianLinearRegressionKnownVariance
 class BayesianLinearRegressionUnknownVariance:
     def __init__(self, alpha=1, beta=2, b_mean=0, b_V=None, fit_intercept=True):
         """
