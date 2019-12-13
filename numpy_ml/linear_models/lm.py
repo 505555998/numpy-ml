@@ -147,7 +147,7 @@ class LogisticRegression:
         self.penalty = penalty
         self.fit_intercept = fit_intercept
 
-    def fit(self, X, y, lr=0.01, tol=1e-7, max_iter=1e7):
+    def fit(self, X, y, lr=0.01, tol=1e-7, max_iter=1e7,random_state = 0):
         """
         Fit the regression coefficients via gradient descent on the negative
         log likelihood.
@@ -163,20 +163,50 @@ class LogisticRegression:
         max_iter : float
             The maximum number of iterations to run the gradient descent
             solver. Default is 1e7.
+
+        tol:
+        https://stats.stackexchange.com/questions/255375/what-exactly-is-tol-tolerance-used-as-stopping-criteria-in-sklearn-models
+
+        sklearn 即： 梯度值上
+        tol : float
+        Stopping criterion. For the newton-cg and lbfgs solvers, the iteration
+        will stop when ``max{|g_i | i = 1, ..., n} <= tol``
+        where ``g_i`` is the i-th component of the gradient.
+
         """
         # convert X to a design matrix if we're fitting an intercept
+        np.random.seed(random_state)
+
         if self.fit_intercept:
             X = np.c_[np.ones(X.shape[0]), X]
 
-        l_prev = np.inf
+        # 初始化的几种方式：
         self.beta = np.random.rand(X.shape[1])
+        # self.beta = np.random.normal(0,1,X.shape[1])
+        # self.beta =  np.zeros(X.shape[1],)
+
+        beta_prev = self.beta
+        pre_loss = np.inf
         for _ in range(int(max_iter)):
             y_pred = sigmoid(np.dot(X, self.beta))
             loss = self._NLL(X, y, y_pred)
-            if l_prev - loss < tol:
-                return
-            l_prev = loss
-            self.beta -= lr * self._NLL_grad(X, y, y_pred)
+            if loss==np.inf or loss>=pre_loss:
+                raise ValueError('Error increased, try reducing alpha')
+
+            grad = self._NLL_grad(X, y, y_pred)
+            print(_, "epoch loss:", loss)
+            print(_, "epoch grad:", grad)
+            # 梯度下降：
+            self.beta = self.beta - lr *grad
+
+            # 这里是 beta 的变动&loss的变动
+            if (max(np.abs(lr *grad)) < tol) & (abs(loss - pre_loss) < tol):
+                print("grad:",grad)
+                print("max(np.abs(lr *grad)):",max(np.abs(lr *grad)),"（loss，pre_loss)",(loss ,pre_loss))
+                print(_ ,"epochs break! beta change very small ！")
+                break
+            else:
+                pre_loss = loss
 
     def _NLL(self, X, y, y_pred):
         """
@@ -204,13 +234,11 @@ class LogisticRegression:
         else:
             penalty = self.gamma * np.linalg.norm(self.beta, ord=order)
 
-
         # 参数向量的1 阶，2 阶 范数
         # l2 即需要是平方的，的计算开方了
-        # todo: l1 norm why?
+        # l1 norm why? done
         # 看百面ml
         # 应该是： sum(绝对值)
-
 
         ##### sklearn l2:
         # out = -np.sum(sample_weight * log_logistic(yz)) +正则 .5 * alpha * np.dot(w, w)
@@ -249,7 +277,7 @@ class LogisticRegression:
         else:
             d_penalty = gamma * np.sign(beta)  # pennal_ty 的导数
 
-        return -(np.dot(y - y_pred, X) + d_penalty) / N
+        return (np.dot(y_pred - y , X) + d_penalty) / N
 
         # y-y_pred 是 N
         # X: N*(M+1)
