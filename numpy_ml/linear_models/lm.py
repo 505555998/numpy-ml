@@ -194,7 +194,8 @@ class LogisticRegression:
         N, M = X.shape
         order = 2 if self.penalty == "l2" else 1
         nll = -np.log(y_pred[y == 1]).sum() - np.log(1 - y_pred[y == 0]).sum()
-        # 原始 合在一起
+
+        ###### 原始 合在一起
         # penalty = 0.5 * self.gamma * np.linalg.norm(self.beta, ord=order) ** 2
 
         # 拆开，然后下面的偏导数也要修改一下：
@@ -223,8 +224,6 @@ class LogisticRegression:
         #  只有saga 可以计算l1，即SGD
         #  SAG stands for Stochastic Average Gradient:
 
-
-
         return (penalty + nll) / N
 
     def _NLL_grad(self, X, y, y_pred):
@@ -235,10 +234,11 @@ class LogisticRegression:
         gamma = self.gamma
         l1norm = lambda x: np.linalg.norm(x, 1)
 
-        #### 原始：
+        ###### 原始：
 
         # 根据 penalty 计算导数：
         # d_penalty = gamma * beta if p == "l2" else gamma * l1norm(beta) * np.sign(beta)   # pennal_ty 的导数
+
         # 如果自己算的话，应该是:
         # l1 只有个 符号函数
         # shape 也是（m+1，）
@@ -254,7 +254,6 @@ class LogisticRegression:
         # y-y_pred 是 N
         # X: N*(M+1)
         # 生成：（M+1,）
-
 
     def predict(self, X):
         """
