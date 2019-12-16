@@ -2,6 +2,7 @@ import numpy as np
 
 
 class Node:
+    # 分割，内部节点
     def __init__(self, left, right, rule):
         self.left = left
         self.right = right
@@ -10,6 +11,7 @@ class Node:
 
 
 class Leaf:
+    # 分割后的叶节点
     def __init__(self, value):
         """
         `value` is an array of class probabilities if classifier is True, else
@@ -52,6 +54,7 @@ class DecisionTree:
         if seed:
             np.random.seed(seed)
 
+        # 初始值：
         self.depth = 0
         self.root = None
 
@@ -79,6 +82,9 @@ class DecisionTree:
             An array of integer class labels for each example in `X` if
             self.classifier = True, otherwise the set of target values for
             each example in `X`.
+
+        `N` examples, each with `M` features
+
         """
         self.n_classes = max(Y) + 1 if self.classifier else None
         self.n_feats = X.shape[1] if not self.n_feats else min(self.n_feats, X.shape[1])
@@ -121,6 +127,7 @@ class DecisionTree:
 
     def _grow(self, X, Y):
         # if all labels are the same, return a leaf
+        # 递归生长
         if len(set(Y)) == 1:
             if self.classifier:
                 prob = np.zeros(self.n_classes)
@@ -136,6 +143,7 @@ class DecisionTree:
 
         N, M = X.shape
         self.depth += 1
+
         feat_idxs = np.random.choice(M, self.n_feats, replace=False)
 
         # greedily select the best split according to `criterion`
@@ -143,21 +151,33 @@ class DecisionTree:
         l = np.argwhere(X[:, feat] <= thresh).flatten()
         r = np.argwhere(X[:, feat] > thresh).flatten()
 
+        print("depth", self.depth, len(l))
+        # depth 1 321
+        # depth 2 249
+        # depth 3 246
+
         # grow the children that result from the split
         left = self._grow(X[l, :], Y[l])
+        print("depth",self.depth,"left",left)
         right = self._grow(X[r, :], Y[r])
+
+
+        # 一直递归
+        # 才返回最终的那个深度的内部节点
         return Node(left, right, (feat, thresh))
 
     def _segment(self, X, Y, feat_idxs):
         """
         Find the optimal split rule (feature index and split threshold) for the
         data according to `self.criterion`.
+        # 所有特征，所有阈值（这里用的错位均值）
         """
         best_gain = -np.inf
         split_idx, split_thresh = None, None
         for i in feat_idxs:
             vals = X[:, i]
             levels = np.unique(vals)
+            # thresholds 是错位均值
             thresholds = (levels[:-1] + levels[1:]) / 2 if len(levels) > 1 else levels
             gains = np.array([self._impurity_gain(Y, t, vals) for t in thresholds])
 
@@ -184,6 +204,7 @@ class DecisionTree:
         parent_loss = loss(Y)
 
         # generate split
+        # index: 返回的是index 可计算长度  也可以拿出来数据
         left = np.argwhere(feat_values <= split_thresh).flatten()
         right = np.argwhere(feat_values > split_thresh).flatten()
 
@@ -220,6 +241,7 @@ def mse(y):
 def entropy(y):
     """
     Entropy of a label sequence
+    也就是交叉熵损失：
     """
     hist = np.bincount(y)
     ps = hist / np.sum(hist)
