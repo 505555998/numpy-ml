@@ -7,8 +7,9 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import roc_auc_score
 X, y = load_breast_cancer(return_X_y=True)
 from sklearn.metrics import *
+np.random.seed(0)
 
-
+######################
 random_order = list(range(len(X)))
 np.random.shuffle(random_order)
 train_samples = int(len(random_order)*0.8,)
@@ -26,22 +27,68 @@ reload(dt)
 from numpy_ml.trees.dt import *
 
 mine = DecisionTree(
-    classifier=True, max_depth=3, criterion="entropy"
+    classifier=True, max_depth=3, criterion="entropy",seed=0
 )
 
 
 mine.fit(X_train,y_train)
 
-y_pred = mine.predict(X_test)
+
+# ****************************************************************************************************
+# depth: 0 no_split_data: (455, 30)
+# depth 1 split by  (20, 16.795) left train (295, 30) right train (160, 30)
+# ****************************************************************************************************
+# depth: 1 no_split_data: (295, 30)
+# depth 2 split by  (27, 0.13579999999999998) left train (259, 30) right train (36, 30)
+# ****************************************************************************************************
+# depth: 2 no_split_data: (259, 30)
+# depth 3 split by  (1, 21.435000000000002) left train (212, 30) right train (47, 30)
+
+# depth 3 left <numpy_ml.trees.dt.Leaf object at 0x1a3d90c080>
+# depth 3 right <numpy_ml.trees.dt.Leaf object at 0x10eb02198>
+# depth 3 left <numpy_ml.trees.dt.Node object at 0x1a3d97fe80>
+# depth 3 right <numpy_ml.trees.dt.Leaf object at 0x1a3d97fac8>
+# depth 3 left <numpy_ml.trees.dt.Node object at 0x1a3d97fa90>
+# depth 3 right <numpy_ml.trees.dt.Leaf object at 0x1a3d915eb8>
 
 
-mine.predict(X_train)
-accuracy_score(y_test,y_pred,)
+
+
+#### 原始数据，探索
+# array 多个条件
+# mask = (X_train[:,20]<=16.795) & (X_train[:,27]<=0.13579) & (X_train[:,1]<=21.435)
+# len(mask) # 455
+# sum(mask) # 212
+# # 位置
+# np.argwhere(mask)
+#
+# # 直接拿数据
+# ##### 最后一层：
+# # left
+# y_train[mask]
+# # right
+# a1 = y_train[(X_train[:,20]<=16.795) & (X_train[:,27]<=0.13579) & (X_train[:,1]>21.435)]
+# np.bincount(a1)/len(a1)  #array([0.08510638, 0.91489362])
 
 
 
+###############
+# 评估
+roc_auc_score(y_test,mine.predict_class_probs(X_test)[:,1],)
+# 0.9865259740259741
 
+###sklearn
 
+from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
+
+dt = DecisionTreeClassifier(
+                criterion="entropy",max_depth=3,
+                splitter="best",
+                random_state=0,)
+
+dt.fit(X_train,y_train)
+roc_auc_score(y_test,dt.predict_proba(X_test)[:,1],)
+# 0.9865259740259741
 
 
 

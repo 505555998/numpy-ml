@@ -3,13 +3,11 @@ import numpy as np
 
 class Node:
     # 分割，内部节点
-    def __init__(self, ):
-        self.left = None
-        self.left_sample = None
-        self.right = None
-        self.right_sample = None
-        self.feature = None
-        self.threshold = None
+    def __init__(self, left, right, rule):
+        self.left = left
+        self.right = right
+        self.feature = rule[0]
+        self.threshold = rule[1]
 
 
 class Leaf:
@@ -125,11 +123,10 @@ class DecisionTree:
         assert self.classifier, "`predict_class_probs` undefined for classifier = False"
         return np.array([self._traverse(x, self.root, prob=True) for x in X])
 
-    def _grow(self, X, Y,depth= 0):
-        nodes = Node()
-        if self.seed is not None:
+    def _grow(self, X, Y):
+        if self.seed:
             np.random.seed(self.seed)
-        print("shape:",X.shape)
+
         # if all labels are the same, return a leaf
         # 递归生长
 
@@ -141,9 +138,8 @@ class DecisionTree:
                 # 其实Y[0]==1 或者 0
                 prob[Y[0]] = 1.0
             return Leaf(prob) if self.classifier else Leaf(Y[0])  # Leaf(Y[0]) 是回归
-
         # if we have reached max_depth, return a leaf
-        if depth >= self.max_depth:
+        if self.depth >= self.max_depth:
             # 如果是回归：
             v = np.mean(Y, axis=0)
 
@@ -156,12 +152,12 @@ class DecisionTree:
                 v = np.bincount(Y, minlength=self.n_classes) / len(Y)
             return Leaf(v)
 
-        # Split recursively until maximum depth is reached.
 
-        # print("#"*88,depth)
         N, M = X.shape
-        print("*" * 100)
-        print("before split", "no_split_data:", X.shape)
+        print("*"*100)
+        print("before split .depth:",self.depth,"no_split_data:",X.shape)
+
+        self.depth += 1
 
         feat_idxs = np.random.choice(M, self.n_feats, replace=False)
 
@@ -170,21 +166,19 @@ class DecisionTree:
 
         l = np.argwhere(X[:, feat] <= thresh).flatten()
         r = np.argwhere(X[:, feat] > thresh).flatten()
-        print("depth", depth+1, "split by ", (feat, thresh), "left train", len(l),sum(Y[l]), "right train",len(r),sum(Y[r]))
+        print("depth", self.depth, "split by ",(feat,thresh),"left train",X[l, :].shape,"right train",X[r, :].shape)
+        # depth 1 311
+        # depth 2 273
+        # depth 3 246
 
         # grow the children that result from the split
-        nodes.feature  = feat
-        nodes.threshold = thresh
-        nodes.left_sample = len(l)
-        nodes.right_sample = len(r)
+        left = self._grow(X[l, :], Y[l])
+        print("depth",self.depth,"left",left,) #left.value,len(left.value))
 
-        nodes.left = self._grow(X[l, :], Y[l],depth=depth+1)
-        print("depth", depth+1, "left", nodes.left,"left_sample",nodes.left_sample, "right_sample",nodes.right_sample)  # left.value,len(left.value))
-
-        nodes.right = self._grow(X[r, :], Y[r],depth=depth+1)
-        print("depth", depth+1, "right", nodes.right,"left_sample",nodes.left_sample, "right_sample",nodes.right_sample)  # right.value, len(right.value))  #
-
-        return nodes
+        # 这块的self.depth ==max_depth，因为左树贪婪生长满足了depth
+        right = self._grow(X[r, :], Y[r])
+        print("depth", self.depth, "right", right,right.value,len(right.value)) #
+        return Node(left, right, (feat, thresh))
 
     def _segment(self, X, Y, feat_idxs):
         """
