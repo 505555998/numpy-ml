@@ -1,3 +1,5 @@
+# 参考：https://towardsdatascience.com/decision-tree-from-scratch-in-python-46e99dfea775
+
 import numpy as np
 
 
