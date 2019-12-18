@@ -34,22 +34,49 @@ mine = DecisionTree(
 mine.fit(X_train,y_train)
 
 
+# shape: (455, 30)
 # ****************************************************************************************************
-# depth: 0 no_split_data: (455, 30)
-# depth 1 split by  (20, 16.795) left train (295, 30) right train (160, 30)
+# before split no_split_data: (455, 30)
+# depth 1 split by  (22, 105.15) left train 275 264 right train 180 23
+# shape: (275, 30)
 # ****************************************************************************************************
-# depth: 1 no_split_data: (295, 30)
-# depth 2 split by  (27, 0.13579999999999998) left train (259, 30) right train (36, 30)
+# before split no_split_data: (275, 30)
+# depth 2 split by  (27, 0.13505) left train 259 255 right train 16 9
+# shape: (259, 30)
 # ****************************************************************************************************
-# depth: 2 no_split_data: (259, 30)
-# depth 3 split by  (1, 21.435000000000002) left train (212, 30) right train (47, 30)
-
-# depth 3 left <numpy_ml.trees.dt.Leaf object at 0x1a3d90c080>
-# depth 3 right <numpy_ml.trees.dt.Leaf object at 0x10eb02198>
-# depth 3 left <numpy_ml.trees.dt.Node object at 0x1a3d97fe80>
-# depth 3 right <numpy_ml.trees.dt.Leaf object at 0x1a3d97fac8>
-# depth 3 left <numpy_ml.trees.dt.Node object at 0x1a3d97fa90>
-# depth 3 right <numpy_ml.trees.dt.Leaf object at 0x1a3d915eb8>
+# before split no_split_data: (259, 30)
+# depth 3 split by  (13, 48.975) left train 255 253 right train 4 2
+# shape: (255, 30)
+# depth 3 left <numpy_ml.trees.dt.Leaf object at 0x1a3a9f7b38> left_sample 255 right_sample 4
+# shape: (4, 30)
+# depth 3 right <numpy_ml.trees.dt.Leaf object at 0x1a3a9f7a20> left_sample 255 right_sample 4
+# depth 2 left <numpy_ml.trees.dt.Node object at 0x1a3a9f7ac8> left_sample 259 right_sample 16
+# shape: (16, 30)
+# ****************************************************************************************************
+# before split no_split_data: (16, 30)
+# depth 3 split by  (21, 25.89) left train 9 8 right train 7 1
+# shape: (9, 30)
+# depth 3 left <numpy_ml.trees.dt.Leaf object at 0x1a3a9f7b70> left_sample 9 right_sample 7
+# shape: (7, 30)
+# depth 3 right <numpy_ml.trees.dt.Leaf object at 0x1a3a9f7be0> left_sample 9 right_sample 7
+# depth 2 right <numpy_ml.trees.dt.Node object at 0x1a3a9f7b00> left_sample 259 right_sample 16
+# depth 1 left <numpy_ml.trees.dt.Node object at 0x1a0edf1748> left_sample 275 right_sample 180
+# shape: (180, 30)
+# ****************************************************************************************************
+# before split no_split_data: (180, 30)
+# depth 2 split by  (27, 0.15075) left train 53 23 right train 127 0
+# shape: (53, 30)
+# ****************************************************************************************************
+# before split no_split_data: (53, 30)
+# depth 3 split by  (23, 957.45) left train 28 20 right train 25 3
+# shape: (28, 30)
+# depth 3 left <numpy_ml.trees.dt.Leaf object at 0x1a3a9f7cc0> left_sample 28 right_sample 25
+# shape: (25, 30)
+# depth 3 right <numpy_ml.trees.dt.Leaf object at 0x1a3a9f7cf8> left_sample 28 right_sample 25
+# depth 2 left <numpy_ml.trees.dt.Node object at 0x1a3a9f7c50> left_sample 53 right_sample 127
+# shape: (127, 30)
+# depth 2 right <numpy_ml.trees.dt.Leaf object at 0x1a3a9f7d30> left_sample 53 right_sample 127
+# depth 1 right <numpy_ml.trees.dt.Node object at 0x1a3a9f7ba8> left_sample 275 right_sample 180
 
 
 

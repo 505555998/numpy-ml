@@ -112,29 +112,51 @@ class GradientBoostedDecisionTree:
         # convert Y to one_hot if not already
         if self.classifier:
             Y = to_one_hot(Y.flatten())
+            # Y: (N,n_class)
         else:
             Y = Y.reshape(-1, 1) if len(Y.shape) == 1 else Y
 
         N, M = X.shape
         self.out_dims = Y.shape[1]
         self.learners = np.empty((self.n_iter, self.out_dims), dtype=object)
-        self.weights = np.ones((self.n_iter, self.out_dims))
-        self.weights[1:, :] *= self.learning_rate
+        self.weights = np.ones((self.n_iter, self.out_dims)) # (10,2)
+        self.weights[1:, :] = self.weights[1:, :] * self.learning_rate
 
-        # fit the base estimator
+        # fit the base estimator，初始值设置
         Y_pred = np.zeros((N, self.out_dims))
         for k in range(self.out_dims):
+            # 2列：0，1，分别算0的prob 和 1的prob
             t = loss.base_estimator()
             t.fit(X, Y[:, k])
-            Y_pred[:, k] += t.predict(X)
+            Y_pred[:, k] = Y_pred[:, k] + t.predict(X)
+            # 即：(455,2) 即每个样本的概率。初始值
+            # Y_pred[:3]
+            # array([[0.36923077, 0.63076923],
+            #        [0.36923077, 0.63076923],
+            #        [0.36923077, 0.63076923]])
+            #
             self.learners[0, k] = t
+            # (10, 2)，每个：类别1个学习器
+            #     array([[<numpy_ml.trees.losses.ClassProbEstimator object at 0x1a47180630>,
+            #         <numpy_ml.trees.losses.ClassProbEstimator object at 0x1a47177828>],
+            #        [None, None],
+            #        [None, None],
+            #        [None, None],
+            #        [None, None],
+            #        [None, None],
+            #        [None, None],
+            #        [None, None],
+            #        [None, None],
+            #        [None, None]], dtype=object)
 
         # incrementally fit each learner on the negative gradient of the loss
         # wrt the previous fit (pseudo-residuals)
-        for i in range(1, self.n_iter):
+        for i in range(1, self.n_iter): # range(1, 10)
+        # 10 次迭代
             for k in range(self.out_dims):
+            # 每次迭代out_dim 个模型
                 y, y_pred = Y[:, k], Y_pred[:, k]
-                neg_grad = -1 * loss.grad(y, y_pred)
+                neg_grad = -1 * loss.grad(y, y_pred) # 这里的y_pred 可以理解成：f_t-1(X)
 
                 # use MSE as the surrogate loss when fitting to negative gradients
                 t = DecisionTree(
@@ -152,8 +174,9 @@ class GradientBoostedDecisionTree:
                     step = loss.line_search(y, y_pred, h_pred)
 
                 # update weights and our overall prediction for Y
+                # 输出分类器的权重
                 self.weights[i, k] *= step
-                Y_pred[:, k] += self.weights[i, k] * h_pred
+                Y_pred[:, k]  = Y_pred[:, k] + self.weights[i, k] * h_pred
 
     def predict(self, X):
         """

@@ -4,6 +4,7 @@ from .dt import DecisionTree
 
 def bootstrap_sample(X, Y):
     N, M = X.shape
+    # 放回抽样
     idxs = np.random.choice(N, N, replace=True)
     return X[idxs], Y[idxs]
 
@@ -72,7 +73,9 @@ class RandomForest:
         y_pred : :py:class:`ndarray <numpy.ndarray>` of shape `(N,)`
             Model predictions for each entry in `X`.
         """
+        # 每棵树的preds
         tree_preds = np.array([[t._traverse(x, t.root) for x in X] for t in self.trees])
+        # 预测的是0，是1
         return self._vote(tree_preds)
 
     def _vote(self, predictions):
@@ -82,6 +85,7 @@ class RandomForest:
         Parameters
         ----------
         predictions : :py:class:`ndarray <numpy.ndarray>` of shape `(n_trees, N)`
+        N 个样本下，每个样本
             The array of predictions from each decision tree in the RF for each
             of the `N` problems in `X`.
 
@@ -93,6 +97,9 @@ class RandomForest:
             the average prediction across decision trees on each problem.
         """
         if self.classifier:
+            # 最大tree 可能会预测：10个0，20个1，return 1
+            # np.bincount([0,0,1,1,1,]) # array([2, 3])
+            # np.bincount(x).argmax() # 1
             out = [np.bincount(x).argmax() for x in predictions.T]
         else:
             out = [np.mean(x) for x in predictions.T]

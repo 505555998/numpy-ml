@@ -57,7 +57,6 @@ class DecisionTree:
         """
 
         # 初始值：
-        self.depth = 0
         self.root = None
         self.seed = seed
         self.n_feats = n_feats
@@ -131,7 +130,7 @@ class DecisionTree:
         nodes = Node()
         if self.seed is not None:
             np.random.seed(self.seed)
-        print("shape:",X.shape)
+        # print("shape:",X.shape)
         # if all labels are the same, return a leaf
         # 递归生长
 
@@ -160,10 +159,10 @@ class DecisionTree:
 
         # Split recursively until maximum depth is reached.
 
-        # print("#"*88,depth)
+
         N, M = X.shape
-        print("*" * 100)
-        print("before split", "no_split_data:", X.shape)
+        # print("*" * 100)
+        # print("before split", "no_split_data:", X.shape)
 
         feat_idxs = np.random.choice(M, self.n_feats, replace=False)
 
@@ -172,7 +171,7 @@ class DecisionTree:
 
         l = np.argwhere(X[:, feat] <= thresh).flatten()
         r = np.argwhere(X[:, feat] > thresh).flatten()
-        print("depth", depth+1, "split by ", (feat, thresh), "left train", len(l),sum(Y[l]), "right train",len(r),sum(Y[r]))
+        # print("depth", depth+1, "split by ", (feat, thresh), "left train", len(l),sum(Y[l]), "right train",len(r),sum(Y[r]))
 
         # grow the children that result from the split
         nodes.feature  = feat
@@ -181,10 +180,10 @@ class DecisionTree:
         nodes.right_sample = len(r)
 
         nodes.left = self._grow(X[l, :], Y[l],depth=depth+1)
-        print("depth", depth+1, "left", nodes.left,"left_sample",nodes.left_sample, "right_sample",nodes.right_sample)  # left.value,len(left.value))
+        # print("depth", depth+1, "left", nodes.left,"left_sample",nodes.left_sample, "right_sample",nodes.right_sample)  # left.value,len(left.value))
 
         nodes.right = self._grow(X[r, :], Y[r],depth=depth+1)
-        print("depth", depth+1, "right", nodes.right,"left_sample",nodes.left_sample, "right_sample",nodes.right_sample)  # right.value, len(right.value))  #
+        # print("depth", depth+1, "right", nodes.right,"left_sample",nodes.left_sample, "right_sample",nodes.right_sample)  # right.value, len(right.value))  #
 
         return nodes
 
@@ -246,10 +245,15 @@ class DecisionTree:
     def _traverse(self, X, node, prob=False):
         if isinstance(node, Leaf):
             if self.classifier:
+                # 返回概率还是类别
+                # node.value.argmax() 代表类别
                 return node.value if prob else node.value.argmax()
             return node.value
+        # 依次递的寻找，直到是个 Leaf
+        # left
         if X[node.feature] <= node.threshold:
             return self._traverse(X, node.left, prob)
+        # right
         return self._traverse(X, node.right, prob)
 
 

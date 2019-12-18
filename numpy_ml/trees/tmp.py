@@ -20,3 +20,23 @@ def fibonacci(n):
         return a1+a2
 
 fibonacci(3)
+
+
+
+
+########################################
+# x = range(1,6)
+# list(x)
+# [x[i+1]/x[i] for i in range(len(x)-1)]
+
+
+import pandas as pd
+df = pd.DataFrame(dict(a = [1,2,3,4,5,11,12,13,14,],
+                       b = ["a","a","a","a","a","b","b","b","b",],))
+hb = lambda x: [x[i+1]/x[i] for i in range(len(x)-1)]
+
+df.groupby(by=["b"])["a"].agg(lambda x: hb(x))
+
+
+
+
