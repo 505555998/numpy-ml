@@ -93,6 +93,7 @@ class BinomialDeviance(LossFunction):
             return numerator / denominator
 
     def get_train_loss(self, y, f, iter, logger):
+        # todo：why
         loss = -2.0 * ((y * f) - f.apply(lambda x: math.exp(1+x))).mean()
         logger.info(('第%d棵树: log-likelihood:%.4f' % (iter, loss)))
 

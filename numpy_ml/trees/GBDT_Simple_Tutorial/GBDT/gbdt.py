@@ -7,9 +7,12 @@ import abc
 import math
 import logging
 import pandas as pd
-from GBDT.decision_tree import Tree
-from GBDT.loss_function import SquaresError, BinomialDeviance, MultinomialDeviance
-from GBDT.tree_plot import plot_tree, plot_all_trees,plot_multi
+
+
+from ..GBDT.decision_tree import Tree
+from ..GBDT.loss_function import SquaresError, BinomialDeviance, MultinomialDeviance
+from ..GBDT.tree_plot import plot_tree, plot_all_trees,plot_multi
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
 pd.set_option('display.max_columns', None)
@@ -105,6 +108,8 @@ class GradientBoostingBinaryClassifier(BaseGradientBoosting):
             data[f_m_name] = data[f_prev_name] + \
                              self.learning_rate * \
                              data.apply(lambda x: self.trees[iter].root_node.get_predict_value(x), axis=1)
+            # 从类 BinomialDeviance 中获得
+            # self.trees[iter].root_node.get_predict_value(x) 获取的是f值
         data['predict_proba'] = data[f_m_name].apply(lambda x: 1 / (1 + math.exp(-x)))
         data['predict_label'] = data['predict_proba'].apply(lambda x: 1 if x >= 0.5 else 0)
 

@@ -24,8 +24,10 @@ class LDA(object):
             Number of unique word tokens across all documents
         phi : :py:class:`ndarray <numpy.ndarray>` of shape `(D, N[d], T)`
             Variational approximation to word-topic distribution
+            变分近似
         gamma : :py:class:`ndarray <numpy.ndarray>` of shape `(D, T)`
             Variational approximation to document-topic distribution
+
         alpha : :py:class:`ndarray <numpy.ndarray>` of shape `(1, T)`
             Parameter for the Dirichlet prior on the document-topic distribution
         beta  : :py:class:`ndarray <numpy.ndarray>` of shape `(V, T)`
@@ -257,3 +259,5 @@ def dg(gamma, d, t):
     E[log X_t] where X_t ~ Dir
     """
     return digamma(gamma[d, t]) - digamma(np.sum(gamma[d, :]))
+
+
