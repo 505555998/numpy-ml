@@ -9,11 +9,17 @@ np.random.seed(12345)
 
 ########################################
 
-from .lda import LDA
+from importlib import reload
+from numpy_ml.lda import lda
+reload(lda)
+from numpy_ml.lda.lda import *
 
 
 def generate_corpus():
     # Generate some fake data
+    # doc-topic；topic-words
+
+    # 300篇文档，10个主题，字典长度30，每篇doc 有N 个词（分布在150-200的均匀分布）
     D = 300
     T = 10
     V = 30
@@ -61,7 +67,9 @@ def generate_corpus():
 
 corpus, T = generate_corpus()
 L = LDA(T)
-L.train(corpus, verbose=False)
+# L.train(corpus, verbose=False)
+
+
 
 
 

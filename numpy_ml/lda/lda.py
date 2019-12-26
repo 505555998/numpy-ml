@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.special import digamma, polygamma, gammaln
 
+# todo：再理解
 
 class LDA(object):
     def __init__(self, T=10):
